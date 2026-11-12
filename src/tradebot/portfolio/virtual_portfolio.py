@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -23,9 +23,7 @@ class VirtualPortfolio:
     quotidien des pertes et profits.
     """
 
-    def __init__(
-        self, starting_balance: float = 1000.0, fee_rate: float = 0.001
-    ) -> None:
+    def __init__(self, starting_balance: float = 1000.0, fee_rate: float = 0.001) -> None:
         """Initialise le portefeuille avec un solde de départ et un taux de frais.
 
         Args:
@@ -102,10 +100,7 @@ class VirtualPortfolio:
         total_cost = cost + fees
 
         if total_cost > self._balance:
-            msg = (
-                f"Solde insuffisant : {self._balance:.2f} disponible, "
-                f"{total_cost:.2f} requis."
-            )
+            msg = f"Solde insuffisant : {self._balance:.2f} disponible, {total_cost:.2f} requis."
             raise ValueError(msg)
 
         self._balance -= total_cost
@@ -113,7 +108,7 @@ class VirtualPortfolio:
             symbol=symbol,
             quantity=quantity,
             entry_price=price,
-            entry_time=datetime.now(tz=timezone.utc).isoformat(),
+            entry_time=datetime.now(tz=UTC).isoformat(),
         )
 
     def close_position(self, price: float) -> float:

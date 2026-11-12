@@ -10,6 +10,8 @@ La gestion du risque compte plus que la stratégie : elle protège le capital.
 | Perte maximale par jour avant arrêt du bot | 5 % du capital |
 | Positions ouvertes en même temps | 1 |
 
+La perte journalière est mesurée sur l'**equity** (trésorerie + position valorisée au marché), pas sur la trésorerie seule, avec une référence prise à l'ouverture de la première bougie du jour UTC. Dans le backtest, la limite atteinte bloque uniquement les nouvelles entrées jusqu'au jour UTC suivant ; le stop-loss continue de protéger la position en cours. Voir [04-architecture.md](04-architecture.md).
+
 ## Règles de sécurité
 - Si le bot perd plus que la limite journalière, il **s'arrête** et attend une décision humaine.
 - Si l'API ne répond pas, le bot n'ouvre aucune nouvelle position.
