@@ -171,6 +171,25 @@ def test_buy_is_refused_without_capital(tmp_path: Path) -> None:
     assert "capital" in decisions[0].reason
 
 
+def test_catchup_processes_oldest_candles_in_batches(tmp_path: Path) -> None:
+    candles = make_candles([100.0, 100.0, 100.0, 100.0, 101.0, 102.0, 103.0])
+    trader, store, _ = _trader(tmp_path, candles, catchup_max_candles=2)
+
+    first = trader.run_cycle()
+    second = trader.run_cycle()
+    third = trader.run_cycle()
+    decisions = store.decisions(20)
+    _close(store)
+
+    assert first.processed_candles == 2
+    assert first.last_candle_ts == candles[1].timestamp
+    assert second.processed_candles == 2
+    assert second.last_candle_ts == candles[3].timestamp
+    assert third.processed_candles == 3
+    assert third.last_candle_ts == candles[-1].timestamp
+    assert len(decisions) == len(candles)
+
+
 # ---------------------------------------------------------------------------
 # Stop-loss
 # ---------------------------------------------------------------------------
