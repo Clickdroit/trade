@@ -10,12 +10,14 @@ Le projet suit une architecture en couches : domaine, stratégie, gestion du ris
 | `strategy` | Indicateurs et règles de croisement. Ne connaît ni l'exchange ni le portefeuille. |
 | `risk` | Dimensionnement des positions et limites de perte. |
 | `exchange` | Lecture des données publiques du Testnet Binance. Aucun ordre. |
-| `portfolio` | Portefeuille virtuel du paper trading (hors backtest). |
-| `storage` | Journal CSV des décisions. |
+| `portfolio` | Portefeuille virtuel : trésorerie, position, frais, PnL, drawdown, invariants. |
+| `paper` | Broker simulé, cycle de Paper Trading, rendu terminal. |
+| `storage` | Journal CSV (`--once`) et persistance SQLite du Paper Trading. |
+| `safety` | Garde-fous : mode `paper` obligatoire, `DRY_RUN`, client public. |
 | `backtesting` | Chargement des données, moteur de simulation, métriques. |
 | `config` | Paramètres validés, lus depuis l'environnement. |
 | `app` | Orchestration d'une analyse ponctuelle (`--once`). |
-| `cli` | Point d'entrée `trade-bot` (`--once`, `--loop`, `--backtest`). |
+| `cli` | Point d'entrée `trade-bot` (`--once`, `--loop`, `backtest`, `paper …`). |
 
 ## Flux d'un backtest
 
@@ -80,6 +82,27 @@ Toute position encore ouverte à la dernière bougie est **liquidée à la clôt
 - En mode `--csv`, `--symbol` et `--timeframe` ne servent que de libellés : le fichier est utilisé tel quel, sans conversion de bougies.
 - Le moteur refuse les listes vides ou trop courtes, les doublons, les dates désordonnées et les prix non positifs.
 
+## Flux du Paper Trading
+
+1. `PaperTrader` charge l'état persisté (SQLite) et vérifie la cohérence du portefeuille.
+2. `exchange.market` récupère les bougies publiques, applique timeout et retries, et **écarte la bougie en cours de formation**.
+3. Le moteur sélectionne les bougies jamais traitées (`processed_candles`), dans l'ordre chronologique, avec un plafond de rattrapage.
+4. Pour chaque bougie : changement de jour UTC, limite de perte journalière, stop-loss, signal MM10/MM30, dimensionnement.
+5. `paper.broker` applique l'exécution simulée (slippage défavorable, frais à l'achat et à la vente).
+6. Une transaction SQLite unique enregistre bougie traitée, décision, transaction éventuelle, equity et état du portefeuille.
+7. `paper.report` affiche le statut ou l'historique.
+
+Le détail (prix d'exécution, priorités de sortie, schéma SQLite) est dans [09-paper-trading.md](09-paper-trading.md).
+
+## Deux conventions d'exécution, aucune anticipation
+
+| Contexte | Signal calculé sur | Exécution | Pourquoi |
+|---|---|---|---|
+| Backtest | clôture de la bougie *N* | ouverture de *N+1* | ne pas réutiliser comme prix d'exécution le prix qui a produit le signal |
+| Paper Trading | clôture de la bougie *N* | clôture de *N* (slippage inclus) | en direct, l'ouverture suivante n'existe pas encore |
+
+Dans les deux cas, seules des bougies clôturées sont utilisées et le stop-loss n'utilise que des prix accessibles après l'entrée.
+
 ## Ce qui n'existe pas encore
 
-Aucune fonction d'envoi d'ordre n'est incluse. Les modules `portfolio` et `storage` servent au paper trading et au journal, pas à l'exécution réelle. Le passage au testnet avec ordres fictifs reste une étape ultérieure.
+Aucune fonction d'envoi d'ordre n'est incluse, ni vers Binance production, ni vers le Testnet. Le Paper Trading est entièrement virtuel : il met à jour un portefeuille en mémoire et une base locale. Le passage au testnet avec ordres fictifs reste une étape ultérieure.

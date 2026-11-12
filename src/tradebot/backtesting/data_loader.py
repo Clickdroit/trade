@@ -8,23 +8,13 @@ from pathlib import Path
 
 import ccxt
 
-from tradebot.domain.models import Candle
+from tradebot.domain.models import TIMEFRAME_MS, Candle
 
 #: Nombre maximal de bougies par requête (limite courante des exchanges).
 _CHUNK_SIZE = 1000
 
 #: Garde-fou contre une pagination qui ne progresserait pas.
 _MAX_CHUNKS = 1000
-
-#: Correspondance timeframe → durée en millisecondes.
-TIMEFRAME_MS: dict[str, int] = {
-    "1m": 60_000,
-    "5m": 300_000,
-    "15m": 900_000,
-    "1h": 3_600_000,
-    "4h": 14_400_000,
-    "1d": 86_400_000,
-}
 
 #: Colonnes obligatoires d'un CSV de bougies.
 REQUIRED_COLUMNS = ("timestamp", "open", "high", "low", "close", "volume")
