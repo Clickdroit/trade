@@ -294,7 +294,9 @@ class PaperTrader:
             return indexed[-1:]
         pending = [(index, candle) for index, candle in indexed if candle.timestamp > last]
         maximum = self._settings.catchup_max_candles
-        return pending[-maximum:] if len(pending) > maximum else pending
+        # Traiter le plus ancien lot en premier : ne jamais sauter une période
+        # lorsque le retard dépasse la limite de rattrapage d'un cycle.
+        return pending[:maximum] if len(pending) > maximum else pending
 
     def _process_candle(
         self, index: int, candle: Candle, candles: list[Candle]
