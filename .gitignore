@@ -1,11 +1,29 @@
-# Clés API : ne jamais envoyer sur GitHub
+# Secrets
 .env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
-*.pyc
-venv/
+*.py[cod]
+*.egg-info/
 .venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
 
-# Données et journaux locaux
+# Local data and logs
+data/
+logs/
 *.csv
+*.log
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
