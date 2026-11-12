@@ -1,9 +1,8 @@
 """Append-only CSV journal for decisions and simulated trades."""
 
 import csv
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
-
 
 FIELDS = ["timestamp", "symbol", "signal", "price", "quantity", "mode", "reason"]
 
@@ -26,7 +25,7 @@ def record_event(
             writer.writeheader()
         writer.writerow(
             {
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "symbol": symbol,
                 "signal": signal,
                 "price": price,

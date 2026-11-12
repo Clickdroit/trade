@@ -1,9 +1,18 @@
 """Centralised, validated application settings."""
 
-from dataclasses import dataclass
+import logging
 import os
+from dataclasses import dataclass
 
 from dotenv import load_dotenv
+
+
+def setup_logging(level: str = "INFO") -> None:
+    """Configure le module logging avec un format lisible."""
+    logging.basicConfig(
+        level=getattr(logging, level.upper(), logging.INFO),
+        format="[%(asctime)s] %(levelname)s %(name)s: %(message)s",
+    )
 
 
 @dataclass(frozen=True)
@@ -18,6 +27,7 @@ class Settings:
     stop_loss_fraction: float = 0.03
     poll_seconds: int = 60
     dry_run: bool = True
+    log_level: str = "INFO"
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -28,6 +38,7 @@ class Settings:
             short_window=int(os.getenv("SHORT_MA", "10")),
             long_window=int(os.getenv("LONG_MA", "30")),
             dry_run=os.getenv("DRY_RUN", "true").lower() != "false",
+            log_level=os.getenv("LOG_LEVEL", "INFO"),
         )
         if settings.short_window <= 0 or settings.long_window <= settings.short_window:
             raise ValueError("Les fenêtres doivent vérifier 0 < SHORT_MA < LONG_MA.")
