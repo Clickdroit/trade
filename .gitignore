@@ -1,0 +1,11 @@
+# Clés API : ne jamais envoyer sur GitHub
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Données et journaux locaux
+*.csv
