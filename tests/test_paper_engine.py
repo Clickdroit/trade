@@ -178,6 +178,7 @@ def test_catchup_processes_oldest_candles_in_batches(tmp_path: Path) -> None:
     first = trader.run_cycle()
     second = trader.run_cycle()
     third = trader.run_cycle()
+    fourth = trader.run_cycle()
     decisions = store.decisions(20)
     _close(store)
 
@@ -185,8 +186,10 @@ def test_catchup_processes_oldest_candles_in_batches(tmp_path: Path) -> None:
     assert first.last_candle_ts == candles[1].timestamp
     assert second.processed_candles == 2
     assert second.last_candle_ts == candles[3].timestamp
-    assert third.processed_candles == 3
-    assert third.last_candle_ts == candles[-1].timestamp
+    assert third.processed_candles == 2
+    assert third.last_candle_ts == candles[5].timestamp
+    assert fourth.processed_candles == 1
+    assert fourth.last_candle_ts == candles[-1].timestamp
     assert len(decisions) == len(candles)
 
 
