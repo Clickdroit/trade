@@ -1,50 +1,36 @@
-"""Binance Spot Testnet market-data adapter.
+"""Binance Spot Testnet — données publiques uniquement.
 
-This adapter is deliberately limited to public market data in the starter version.
-Do not add live endpoints or withdrawal permissions.
+Ce module ne contient **aucun** endpoint d'ordre ni de retrait. Le client est
+toujours créé en sandbox et sans credentials : les endpoints publics de données
+de marché ne demandent aucune authentification.
 """
 
-import logging
+from __future__ import annotations
 
 import ccxt
 
 from tradebot.config import Settings
 
+#: Timeout par défaut d'une requête HTTP (millisecondes).
+DEFAULT_TIMEOUT_MS = 10_000
 
-def create_testnet_client(settings: Settings) -> ccxt.binance:
-    """Crée un client Binance en mode sandbox avec le rate-limit activé."""
+
+def create_testnet_client(settings: Settings | None = None) -> ccxt.binance:
+    """Crée un client Binance sandbox, public et rate-limité.
+
+    Args:
+        settings: Configuration fournissant le timeout ; valeurs par défaut sinon.
+
+    Returns:
+        Un client CCXT en mode sandbox, sans clé API.
+    """
+    timeout = DEFAULT_TIMEOUT_MS if settings is None else settings.request_timeout_ms
     client = ccxt.binance(
         {
             "enableRateLimit": True,
+            "timeout": timeout,
             "options": {"defaultType": "spot"},
         }
     )
     client.set_sandbox_mode(True)
     return client
-
-
-def fetch_ohlcv(
-    settings: Settings,
-    limit: int = 100,
-    logger: logging.Logger | None = None,
-) -> list[list]:
-    """Récupère les données OHLCV depuis le Testnet Binance.
-
-    Args:
-        settings: Configuration de l'application.
-        limit: Nombre de bougies à récupérer.
-        logger: Logger optionnel pour tracer les erreurs réseau.
-
-    Returns:
-        Liste de bougies au format [timestamp, open, high, low, close, volume].
-    """
-    _log = logger or logging.getLogger(__name__)
-    client = create_testnet_client(settings)
-    try:
-        return client.fetch_ohlcv(settings.symbol, timeframe=settings.timeframe, limit=limit)
-    except ccxt.NetworkError:
-        _log.error("Erreur réseau lors de la récupération OHLCV pour %s.", settings.symbol)
-        raise
-    except ccxt.ExchangeNotAvailable:
-        _log.error("Exchange indisponible lors de la récupération OHLCV pour %s.", settings.symbol)
-        raise

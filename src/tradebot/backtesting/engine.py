@@ -54,14 +54,15 @@ from tradebot.backtesting.metrics import (
     compute_sharpe_ratio,
     compute_win_rate,
 )
-from tradebot.domain.models import Candle, Signal
+from tradebot.domain.models import (
+    EXIT_END_OF_DATA,
+    EXIT_SIGNAL,
+    EXIT_STOP_LOSS,
+    Candle,
+    Signal,
+)
 from tradebot.risk.manager import RiskLimits, daily_loss_limit_reached, position_size
 from tradebot.strategy.moving_average import crossover_signal
-
-#: Motifs de sortie d'un trade.
-EXIT_SIGNAL = "signal"
-EXIT_STOP_LOSS = "stop_loss"
-EXIT_END_OF_DATA = "end_of_data"
 
 #: Millisecondes dans une année civile, pour l'annualisation du Sharpe.
 _MS_PER_YEAR = 365 * 24 * 60 * 60 * 1000.0
